@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    {{- include "labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        fsGroup: 1001 # match the gid of the user in the container
+        fsGroupChangePolicy: OnRootMismatch
+        {{- with .Values.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      affinity:
+        podAffinity:
+          # Schedule RollingUpdate on the same node as the existing pod for this shard, so that the volume is mounted.
+          # Initial deployments also succeed with this affinity, since apparently the scheduler takes into account the pod that is being created.
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: [{{ .Values.name | quote }}]
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values: [{{ .Release.Name | quote }}]
+                  - key: app.kubernetes.io/environment
+                    operator: In
+                    values: [{{ .Values.env | quote }}]
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          startupProbe:
+            {{- include "httpHealthProbe" . | nindent 12 }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            {{- include "httpHealthProbe" . | nindent 12 }}
+            periodSeconds: 15
+            failureThreshold: 6
+            timeoutSeconds: 5
+          readinessProbe:
+            {{- include "httpHealthProbe" . | nindent 12 }}
+            periodSeconds: 15
+            failureThreshold: 6
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: secrets
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            - name: data
+              mountPath: /data
+          env:
+            - name: BAZ_APP_MODE
+              value: fss
+            - name: LOCAL_DATA_PATH
+              value: /data/platform
+            - name: RUST_LOG
+              value: {{ .Values.log }}
+            - name: RUST_BACKTRACE
+              value: "1"
+            - name: ENV
+              value: {{ .Values.env }}
+            - name: GITHUB_PAT
+              {{- if .Values.githubPat }}
+              value: {{ .Values.githubPat }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretKeyRef.name }}
+                  key: github_pat
+              {{- end }}
+            - name: BAZ_PRIVATE_MODE_KEY
+              {{- if .Values.privateModeKey }}
+              value: {{ .Values.privateModeKey }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretKeyRef.name }}
+                  key: private_mode_key
+              {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data-{{ .Values.name }}
+        - name: secrets
+          {{- toYaml .Values.secretsVolume | nindent 10 }}
+      nodeSelector:
+        {{- toYaml .Values.nodeGroup | nindent 8 }}

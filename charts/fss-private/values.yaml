@@ -1,0 +1,55 @@
+name: fss-private
+
+image:
+  repository:  # required
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+  tag:  # required
+
+service:
+  type: ClusterIP
+  port: 3000
+
+serviceAccount:
+  name:  # required
+
+env: private
+
+githubPat: # required, or set via secret
+privateModeKey: # required, or set via secret
+
+replicaCount: 1
+
+resources:
+  limits:
+    memory: 4Gi
+  requests:
+    memory: 256Mi
+
+log: "INFO,sqlx::query=info,hyper=info"
+
+nodeGroup: # required
+# ex.
+#  node_group: example
+
+secretKeyRef:
+  name:
+secretsVolume:
+# ex.
+#  csi:
+#    driver: secrets-store.csi.k8s.io
+#    readOnly: true
+#    volumeAttributes:
+#      secretProviderClass: some_name
+
+storage:
+  size: 50Gi
+  class: # required
+
+extraEnv: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+containerSecurityContext: {}
