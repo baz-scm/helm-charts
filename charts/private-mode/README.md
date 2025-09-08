@@ -1,4 +1,6 @@
-# FSS Private
+# Private Mode
+
+Private Mode enables organizations to manage and control access to their code repositories securely.
 
 ## Prerequisites
 
@@ -8,8 +10,8 @@
 ## Install
 
 - Fill in the required fields in `values.yaml` file
-- Run `helm install fss-private . --create-namespace --namespace [namespace name]`
-- Expose the `fss-private` service
+- Run `helm install private-mode . --create-namespace --namespace [namespace name]`
+- Expose the `private-mode` service
 
 ### Traefik
 
@@ -17,7 +19,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: fss-private
+  name: private-mode
   namespace: [namespace name]
 spec:
   routes:
@@ -26,7 +28,7 @@ spec:
       priority: 100
       services:
         - kind: Service
-          name: fss-private
+          name: private-mode
           passHostHeader: true
           port: 3000
 ```

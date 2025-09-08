@@ -1,5 +1,5 @@
 apiVersion: v2
-name: fss-private
+name: private-mode
 description: filesystem service
 
 type: application

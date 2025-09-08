@@ -1,3 +1,3 @@
 # Baz Helm Charts
 
-- [FSS private](charts/fss-private/README.md)
+- [Private Mode](charts/private-mode/README.md)

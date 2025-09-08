@@ -1,4 +1,4 @@
-name: fss-private
+name: private-mode
 
 image:
   repository:  # required
