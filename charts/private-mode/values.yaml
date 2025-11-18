@@ -10,8 +10,9 @@ service:
   type: ClusterIP
   port: 3000
 
+# supply your own service account if extra permissions are required, like secret access
 serviceAccount:
-  name:  # required
+  name:
 
 env: private
 
@@ -28,7 +29,7 @@ resources:
 
 log: "INFO,sqlx::query=info,hyper=info"
 
-nodeGroup: # required
+nodeGroup:
 # ex.
 #  node_group: example
 
@@ -42,9 +43,10 @@ secretsVolume:
 #    volumeAttributes:
 #      secretProviderClass: some_name
 
+# it is recommended to use persistent storage when the size of repositories is large (5GB+)
 storage:
-  size: 50Gi
-  class: # required
+  size:
+  class:
 
 extraEnv: {}
 

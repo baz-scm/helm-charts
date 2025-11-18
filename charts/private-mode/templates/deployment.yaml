@@ -35,7 +35,7 @@ spec:
         {{- with .Values.podSecurityContext }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ default .Values.name .Values.serviceAccount.name }}
       affinity:
         podAffinity:
           # Schedule RollingUpdate on the same node as the existing pod for this shard, so that the volume is mounted.
@@ -79,17 +79,27 @@ spec:
             timeoutSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if or .Values.secretsVolume (and .Values.storage.size .Values.storage.class) }}
           volumeMounts:
+            {{- if .Values.secretsVolume }}
             - name: secrets
               mountPath: "/mnt/secrets-store"
               readOnly: true
+            {{- end }}
+            {{- if and .Values.storage.size .Values.storage.class }}
             - name: data
               mountPath: /data
+            {{- end }}
+          {{- end }}
           env:
             - name: BAZ_APP_MODE
               value: fss
             - name: LOCAL_DATA_PATH
+              {{- if and .Values.storage.size .Values.storage.class }}
               value: /data/platform
+              {{- else }}
+              value: /tmp
+              {{- end }}
             - name: RUST_LOG
               value: {{ .Values.log }}
             - name: RUST_BACKTRACE
@@ -117,11 +127,19 @@ spec:
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+      {{- if or .Values.secretsVolume (and .Values.storage.size .Values.storage.class) }}
       volumes:
+        {{- if and .Values.storage.size .Values.storage.class }}
         - name: data
           persistentVolumeClaim:
             claimName: data-{{ .Values.name }}
+        {{- end }}
+        {{- with .Values.secretsVolume }}
         - name: secrets
-          {{- toYaml .Values.secretsVolume | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeGroup }}
       nodeSelector:
-        {{- toYaml .Values.nodeGroup | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
