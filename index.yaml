@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  private-mode:
+  - apiVersion: v2
+    appVersion: unspecified
+    created: "2026-01-12T15:49:28.775070065Z"
+    description: filesystem service
+    digest: bb93e3adcba5c96f6de04f60e14aacfb611d9b34521065dc954c84212223431d
+    name: private-mode
+    type: application
+    urls:
+    - https://github.com/baz-scm/helm-charts/releases/download/private-mode-0.1.0/private-mode-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-01-12T15:49:28.775076096Z"
