@@ -115,6 +115,10 @@ spec:
                   name: {{ .Values.secretKeyRef.name }}
                   key: github_pat
               {{- end }}
+            {{- if .Values.githubHost }}
+            - name: GITHUB_HOST
+              value: {{ .Values.githubHost }}
+            {{- end }}
             - name: BAZ_PRIVATE_MODE_KEY
               {{- if .Values.privateModeKey }}
               value: {{ .Values.privateModeKey }}
