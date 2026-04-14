@@ -1,11 +1,8 @@
 <div align="center">
 
-# Baz CLI
+# Baz Helm Charts
 
 ![Baz Logo](https://avatars.githubusercontent.com/u/140384842?s=200&v=4)
-
-**Review what matters, skim through the rest**  
-*Let AI guide you through the review*
 
 This repository contains Helm charts for deploying Baz services to Kubernetes. The primary chart currently available is **Private Mode**, which packages the filesystem service used to broker secure, private repository access.
 
@@ -27,6 +24,7 @@ Key values in `charts/private-mode/values.yaml` include:
 
 - **Image**: `image.repository` (required) and `image.tag` (required) control the container image; `image.pullSecrets` lets you reference private registries.
 - **Access credentials**: `githubPat` and `privateModeKey` must be supplied (directly or via the `secretKeyRef` secret) for GitHub content access and Baz authentication.
+- **GHES support**: For GitHub Enterprise Server deployments, set `githubHost` to your GHES hostname (e.g. `github.acme.corp`). Defaults to `github.com` if not set.
 - **Environment & logging**: `env` sets the deployment environment label, while `log` configures the Rust logger levels.
 - **Scheduling**: `nodeGroup` allows targeting specific nodes; pod-level annotations and labels can be added via `podAnnotations` and `podLabels`.
 - **Security**: `podSecurityContext` and `containerSecurityContext` allow tailoring runtime privileges; filesystem group defaults are set to match the container user.
@@ -40,6 +38,7 @@ image:
   repository: <your-registry>/<image>
   tag: <version>
 githubPat: <token or empty if using secretKeyRef>
+githubHost: github.acme.corp  # optional, for GHES deployments
 privateModeKey: <key or empty if using secretKeyRef>
 secretKeyRef:
   name: <existing-secret-with-github_pat-and-private_mode_key>

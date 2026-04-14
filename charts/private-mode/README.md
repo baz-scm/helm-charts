@@ -6,6 +6,7 @@ Private Mode enables organizations to manage and control access to their code re
 
 - Create a Baz access token
 - Create a GitHub PAT with `contents:read` permission for the repositories you want to use it with
+- For GitHub Enterprise Server (GHES) deployments, set `githubHost` to your GHES hostname (e.g. `github.acme.corp`). Defaults to `github.com` if not set.
 
 ## Install
 

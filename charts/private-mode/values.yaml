@@ -17,6 +17,7 @@ serviceAccount:
 env: private
 
 githubPat: # required, or set via secret
+githubHost: # optional, defaults to github.com. Set to your GHES hostname (e.g. github.acme.corp) for GHES deployments
 privateModeKey: # required, or set via secret
 
 replicaCount: 1
